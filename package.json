@@ -1,0 +1,19 @@
+{
+  "name": "transforma",
+  "version": "0.0.1",
+  "description": "Intelligent, AI-assisted data mapping and transformation for complex, automated data workflows",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjcompt/transforma.git"
+  },
+  "author": "Zach Compton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zjcompt/transforma/issues"
+  },
+  "homepage": "https://github.com/zjcompt/transforma#readme"
+}
