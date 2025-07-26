@@ -39,5 +39,5 @@ const fastify = await Fastify({
   }
 });
 
-export const Logger = fastify.log;
-export { fastify as Fastify };
+export const logger = fastify.log;
+export { fastify as Fastify, logger as Logger }

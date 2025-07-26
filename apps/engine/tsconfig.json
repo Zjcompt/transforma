@@ -1,0 +1,12 @@
+{
+  "extends": "@transforma/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@transforma/imports/*": ["../../packages/imports/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

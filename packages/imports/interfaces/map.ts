@@ -1,6 +1,7 @@
-interface IMap {
+export interface IMap {
   id: string,
   name: string,
+  type: 'jsonSchema' | 'csv',
   inputSchema: string,
   outputSchema: string,
   javascript: string,
