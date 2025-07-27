@@ -32,10 +32,40 @@ export default class Map implements IMap {
     this.createdAt = map.createdAt;
   }
 
-  static async getAll() {
-    Logger.debug('Getting all maps');
-    const maps = await postgresQuery<IMap[]>(`SELECT * FROM maps ORDER BY createdAt DESC`, [], Logger);
-    return maps.map((map) => new Map(map));
+  static async getAllPaginated(page: number, limit: number, search?: string) {
+    Logger.debug({ page, limit, search }, 'Getting paginated maps');
+    
+    const offset = (page - 1) * limit;
+    
+    let whereClause = '';
+    let queryParams: any[] = [];
+    let paramIndex = 1;
+    
+    if (search && search.trim()) {
+      whereClause = 'WHERE name ILIKE $1';
+      queryParams.push(`%${search.trim()}%`);
+      paramIndex++;
+    }
+    
+    const countQuery = `SELECT COUNT(*) as total FROM maps ${whereClause}`;
+    const countResult = await postgresQuery<{ total: string }[]>(countQuery, queryParams, Logger);
+    const total = parseInt(countResult[0]?.total || '0', 10);
+    
+    const dataQuery = `
+      SELECT * FROM maps 
+      ${whereClause} 
+      ORDER BY createdAt DESC 
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+    queryParams.push(limit, offset);
+    
+    const mapsData = await postgresQuery<IMap[]>(dataQuery, queryParams, Logger);
+    const maps = mapsData.map((map) => new Map(map));
+    
+    return {
+      maps,
+      total
+    };
   }
 
   static async get(id: string) {
