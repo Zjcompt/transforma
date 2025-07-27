@@ -10,15 +10,15 @@ const checkTables = async () => {
   const res = await pool.query('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\'');
   const tables = res.rows.map((row) => row.table_name);
   if(!tables.includes('maps')) {
-    await pool.query('CREATE TABLE maps (id UUID PRIMARY KEY, name TEXT UNIQUE NOT NULL, type TEXT, inputSchema TEXT, outputSchema TEXT, javascript TEXT, timesRan INTEGER, lastRun TIMESTAMP, updatedAt TIMESTAMP, createdAt TIMESTAMP)');
+    await pool.query('CREATE TABLE maps (id UUID PRIMARY KEY, name TEXT UNIQUE NOT NULL, type TEXT, inputSchema TEXT, outputSchema TEXT, javascript TEXT, timesRan INTEGER, lastRun TIMESTAMP, updatedAt TIMESTAMP, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
     Logger.info({}, 'Created maps table');
   }
   if(!tables.includes('errored_runs')) {
-    await pool.query('CREATE TABLE errored_runs (id UUID PRIMARY KEY, mapId UUID REFERENCES maps(id), error TEXT, createdAt TIMESTAMP)');
+    await pool.query('CREATE TABLE errored_runs (id UUID PRIMARY KEY, mapId UUID REFERENCES maps(id), input TEXT, error TEXT, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
     Logger.info({}, 'Created errored_runs table');
   }
   if(!tables.includes('runs')) {
-    await pool.query('CREATE TABLE runs (id UUID PRIMARY KEY, mapId UUID REFERENCES maps(id), input TEXT, output JSONB, createdAt TIMESTAMP)');
+    await pool.query('CREATE TABLE runs (id UUID PRIMARY KEY, mapId UUID REFERENCES maps(id), input TEXT, output JSONB, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
     Logger.info({}, 'Created runs table');
   }
 

@@ -1,7 +1,7 @@
-export interface IErroredRun {
+export interface IRun {
   id: string;
   mapId: string;
   input: object;
-  error: string;
+  output: object;
   createdAt: Date;
 }
