@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { Fastify } from "../../../../controllers/fastify.js";
-import { postgresQuery } from "../../../../controllers/postgresql.js";
+import { Fastify } from "../../../../../controllers/fastify.js";
+import { postgresQuery } from "../../../../../controllers/postgresql.js";
 import { IRun } from "@transforma/imports/interfaces/runs.js";
 
 interface QueryParams {

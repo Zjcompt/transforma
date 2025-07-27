@@ -169,7 +169,7 @@ GET /map/{id}
 
 #### Get Map Execution History
 ```http
-GET /map/runs?page=1&limit=10
+GET /map/{id}/runs?page=1&limit=10
 ```
 
 ## How It Works
