@@ -32,6 +32,12 @@ export default class Map implements IMap {
     this.createdAt = map.createdAt;
   }
 
+  static async getAll() {
+    Logger.debug('Getting all maps');
+    const maps = await postgresQuery<IMap[]>(`SELECT * FROM maps ORDER BY createdAt DESC`, [], Logger);
+    return maps.map((map) => new Map(map));
+  }
+
   static async get(id: string) {
     Logger.debug({ id }, 'Getting Map');
     const maps = await postgresQuery<IMap[]>(`SELECT * FROM maps WHERE id = $1`, [id]);
