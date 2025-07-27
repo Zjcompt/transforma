@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://i.imgur.com/87Di20O.png" alt="Transforma Logo" width="200" height="200">
   
-  **Intelligent, AI-assisted data mapping and transformation for complex, automated data workflows**
+  **AI-Powered Data Mapper for Automated Workflows**
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)

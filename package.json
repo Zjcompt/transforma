@@ -1,7 +1,7 @@
 {
   "name": "transforma",
   "version": "0.0.1",
-  "description": "Intelligent, AI-assisted data mapping and transformation for complex, automated data workflows",
+  "description": "AI-Powered Data Mapper for Automated Workflows",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
