@@ -14,7 +14,7 @@ export const createMapFunction = async (systemPrompt: string): Promise<string> =
   });
 
   const completion = await client.responses.parse({
-    model: "gpt-4o-mini",
+    model: process.env.OPENAI_MODEL || "gpt-4.1-2025-04-14",
     input: [
       {
         role: 'system',

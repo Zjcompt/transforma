@@ -1,5 +1,6 @@
 import { Fastify } from './controllers/fastify.js';
 import './api/v1/map/post.js';
+import './api/v1/map/[id]/execute/post.js';
 
 (async () => {
   let port = Number(process.env.PORT);

@@ -1,6 +1,11 @@
 import { IMap } from '@transforma/imports/interfaces/map.js';
 import { createMapFunction } from '../controllers/aiGenerator.js';
 import { postgresQuery } from '../controllers/postgresql.js';
+import vm from 'vm';
+import { executionCache } from 'src/controllers/executionCache.js';
+import { Logger } from 'src/controllers/fastify.js';
+import fs from 'fs';
+import path from 'path';
 
 export default class Map implements IMap {
   id: string;
@@ -27,6 +32,19 @@ export default class Map implements IMap {
     this.createdAt = map.createdAt;
   }
 
+  static async get(id: string) {
+    Logger.debug({ id }, 'Getting Map');
+    const maps = await postgresQuery<IMap[]>(`SELECT * FROM maps WHERE id = $1`, [id]);
+    const map = maps[0];
+
+    if(!map) {
+      throw new Error('Map not found');
+    }
+
+    Logger.debug({ map }, 'Got Map');
+    return new Map(map);
+  }
+
   async create() {
     this.javascript = await this.generateJavascript();
     
@@ -36,27 +54,49 @@ export default class Map implements IMap {
   }
 
   async generateJavascript() {
-    const javascript = await createMapFunction('openai', `Your job is to generate a JavaScript function that will map an object from the input schema and create an object that conforms to the output schema.
-        
-        Input Schema: ${this.inputSchema}
-        Type: ${this.type}
-        Output Schema: ${this.outputSchema}
-        Type: ${this.type}
-        
-        The function should be a valid JavaScript function that can be executed in a Node.js environment.
+    const promptPath = path.join(path.resolve(), 'src/prompt.md');
+    const promptTemplate = fs.readFileSync(promptPath, 'utf-8');
+    
+    const systemPrompt = promptTemplate
+      .replace('{{inputSchema}}', this.inputSchema)
+      .replace('{{outputSchema}}', this.outputSchema)
+      .replace('{{type}}', this.type);
 
-        The function should be in the following format:
-        function transform(inputObject) {
-          // Do your mapping here
+    return await createMapFunction('openai', systemPrompt);
+  }
 
-          return outputObject;
-        }
+  async run(input: any) {
+    Logger.debug({ id: this.id, input }, 'Running Map');
 
-        Make sure to check the input object for any missing or null values and return an error if any are found or for any possible errors that may occur.
-        You should not use any external libraries, only use basic JavaScript functions. 
-        You should only return the function with no other text or comments or formatting.
-    `);
+    const sandbox = { input };
+    let script: vm.Script;
+    
+    if(executionCache.has(this.id)) {
+      Logger.debug({ id: this.id }, 'Using cached script');
 
-    return javascript;
+      script = executionCache.get(this.id);
+    }else{
+      Logger.debug({ id: this.id }, 'Creating new script and adding to cache');
+
+      script = new vm.Script(`(${this.javascript})(input)`);
+      executionCache.add(this.id, script);
+    }
+
+    if(!script) {
+      throw new Error('Script not found, something went terribly wrong');
+    }
+
+    const output = await script.runInNewContext(sandbox, {
+      timeout: 10000
+    });
+
+    Logger.debug({
+      id: this.id,
+      name: this.name,
+      input,
+      output
+    }, 'Executed Map');
+
+    return output;
   }
 }

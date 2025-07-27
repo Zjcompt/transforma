@@ -43,7 +43,7 @@ Fastify.post('/api/v1/map', async (req: FastifyRequest, res: FastifyReply) => {
 
   await map.create();
 
-  req.log.info('Generated JavaScript', { javascript: map.javascript });
+  req.log.info({ javascript: map.javascript }, 'Generated JavaScript');
 
   return res.status(201).send(map);
 });
