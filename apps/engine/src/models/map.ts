@@ -6,11 +6,12 @@ import { executionCache } from 'src/controllers/executionCache.js';
 import { Logger } from 'src/controllers/fastify.js';
 import fs from 'fs';
 import path from 'path';
+import ajv from 'src/controllers/ajv.js';
 
 export default class Map implements IMap {
   id: string;
   name: string;
-  type: 'jsonSchema' | 'csv';
+  type: 'json' | 'jsonSchema';
   inputSchema: string;
   outputSchema: string;
   javascript: string;
@@ -89,34 +90,49 @@ export default class Map implements IMap {
     return this;
   }
 
-  async generateJavascript() {
+  async generateJavascript(additionalPrompt?: string) {
     const promptPath = path.join(path.resolve(), 'src/prompt.md');
     const promptTemplate = fs.readFileSync(promptPath, 'utf-8');
     
     const systemPrompt = promptTemplate
       .replace('{{inputSchema}}', this.inputSchema)
       .replace('{{outputSchema}}', this.outputSchema)
-      .replace('{{type}}', this.type);
+      .replace('{{type}}', this.type)
+      .replace('{{additionalPrompt}}', additionalPrompt || '');
 
     return await createMapFunction('openai', systemPrompt);
   }
 
   async run(input: any) {
-    Logger.debug({ id: this.id, input }, 'Running Map');
-
     const sandbox = { input };
+
     let script: vm.Script;
-    
+    let validator: ((input: any) => boolean) | null = null;
     if(executionCache.has(this.id)) {
-      Logger.debug({ id: this.id }, 'Using cached script');
+      Logger.debug({ id: this.id }, 'Using cached script and validator');
+      const cached = executionCache.get(this.id);
+      script = cached.script;
+      validator = cached.validator;
 
-      script = executionCache.get(this.id);
-    }else{
-      Logger.debug({ id: this.id }, 'Creating new script and adding to cache');
-
+      if(this.type === 'jsonSchema' && validator) {
+        Logger.debug({ id: this.id, schema: this.inputSchema }, 'Validating input against schema');
+        const isValid = validator(input);
+        if(!isValid) {
+          throw new Error('Input does not match schema');
+        }
+      }
+    } else {
+      Logger.debug({ id: this.id }, 'Creating new script and validator then adding to cache');
       script = new vm.Script(`(${this.javascript})(input)`);
-      executionCache.add(this.id, script);
+
+      if(this.type === 'jsonSchema') {
+        const schema = JSON.parse(this.inputSchema);
+        validator = ajv.compile(schema);
+      }
+
+      executionCache.add(this.id, { script, validator });
     }
+
 
     if(!script) {
       throw new Error('Script not found, something went terribly wrong');

@@ -8,6 +8,8 @@ Below is the context and requirements for a code generation task. Write a single
 - **Output Schema:** `{{outputSchema}}`
 - **Data Type:** `{{type}}`
 
+- **Additional Information** `{{additionalPrompt}}`
+
 ---
 
 ## Requirements
