@@ -15,12 +15,12 @@ Fastify.post('/api/v1/map/:id/execute', async (req: FastifyRequest, res: Fastify
     const map = await Map.get(id);
     output = await map.run(input);
   }catch(e: any){
-    await postgresQuery(`INSERT INTO errored_runs (id, mapId, input, error) VALUES ($1, $2, $3, $4)`, [randomUUID(), id, JSON.stringify(input), e.message]);
+    await postgresQuery(`INSERT INTO errored_runs (id, "mapId", input, error) VALUES ($1, $2, $3, $4)`, [randomUUID(), id, JSON.stringify(input), e.message]);
     res.status(500).send({ error: e.message });
     return;
   }
 
-  await postgresQuery(`INSERT INTO runs (id, mapId, input, output) VALUES ($1, $2, $3, $4)`, [randomUUID(), id, JSON.stringify(input), output]);
+  await postgresQuery(`INSERT INTO runs (id, "mapId", input, output) VALUES ($1, $2, $3, $4)`, [randomUUID(), id, JSON.stringify(input), output]);
   
   res.status(200).send(output);
 });

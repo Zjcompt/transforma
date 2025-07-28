@@ -84,7 +84,7 @@ export default class Map implements IMap {
   async create() {
     this.javascript = await this.generateJavascript();
     
-    await postgresQuery(`INSERT INTO maps (id, name, type, inputSchema, outputSchema, javascript, timesRan, lastRun, updatedAt, createdAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [this.id, this.name, this.type, this.inputSchema, this.outputSchema, this.javascript, this.timesRan, this.lastRun, this.updatedAt, this.createdAt]);
+    await postgresQuery(`INSERT INTO maps (id, name, type, "inputSchema", "outputSchema", javascript, "timesRan", "lastRun", "updatedAt", "createdAt") VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [this.id, this.name, this.type, this.inputSchema, this.outputSchema, this.javascript, this.timesRan, this.lastRun, this.updatedAt, this.createdAt]);
 
     return this;
   }
