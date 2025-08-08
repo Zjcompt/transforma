@@ -73,9 +73,13 @@ export default class Map implements IMap {
    * @returns The created map
    */
   static async create(mapRequest: MapRequest) {
+    console.log(mapRequest);
     const res = await fetch(`http://localhost:3000/api/v1/map`, {
       method: 'POST',
       body: JSON.stringify(mapRequest),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!res.ok) {
@@ -99,6 +103,9 @@ export default class Map implements IMap {
     const res = await fetch(`http://localhost:3000/api/v1/map/${this.id}`, {
       method: 'PUT',
       body: JSON.stringify(mapRequest),
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!res.ok) {
@@ -115,7 +122,7 @@ export default class Map implements IMap {
    */
   async delete() {
     const res = await fetch(`http://localhost:3000/api/v1/map/${this.id}`, {
-      method: 'DELETE',
+      method: 'DELETE'
     });
 
     if (!res.ok) {

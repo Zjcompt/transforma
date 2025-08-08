@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button.tsx'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import Map from '@/models/map.ts'
 import { Pagination } from '@transforma/imports/interfaces/pagination.ts'
+import MapCard from '@/components/ui/mapCard.tsx'
 
 type FormState = {
   id?: string
@@ -86,21 +87,15 @@ export default function Maps() {
     }
   }
 
-  const onDelete = async (id: string) => {
-    if (!confirm('Delete this map? This cannot be undone.')) return
-    try {
-      setLoading(true)
-      setError(null)
-      const map = maps.find((x) => x.id === id)
-      if (!map) throw new Error('Map not found')
-      await map.delete()
-      setMaps((prev) => prev.filter((x) => x.id !== id))
-      fetchMaps(page, limit)
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Failed to delete map'
-      setError(message)
-    } finally {
-      setLoading(false)
+  const onDelete = async (id: string, success?: boolean, error?: string) => {
+    if (success) {
+      setMaps((prev) => prev.filter((x) => x.id !== id));
+      await fetchMaps(page, limit);
+    } else if (error) {
+      setError(error);
+      setLoading(false);
+    } else {
+      setLoading(true);
     }
   }
 
@@ -123,37 +118,8 @@ export default function Maps() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {maps.map((m) => (
-          <div key={m.id} className="border rounded-lg p-4 bg-card text-card-foreground shadow-sm">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-semibold text-lg">{m.name}</h3>
-                <div className="text-xs text-muted-foreground">{m.id}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(m)}>
-                  <Pencil className="size-4" />
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => onDelete(m.id)}>
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="mt-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Type</span>
-                <span className="font-medium">{m.type}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Times Ran</span>
-                <span className="font-medium">{Number(m.timesRan || 0)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Last Run</span>
-                <span className="font-medium">{m.lastRun ? new Date(m.lastRun).toLocaleString() : '—'}</span>
-              </div>
-            </div>
-          </div>
+        {maps.map((map) => (
+          <MapCard key={map.id} map={map} openEdit={openEdit} onDelete={onDelete} />
         ))}
       </div>
 
