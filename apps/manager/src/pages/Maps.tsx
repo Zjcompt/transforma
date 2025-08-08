@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button.tsx'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import Map from '@/models/map.ts'
 import { Pagination } from '@transforma/imports/interfaces/pagination.ts'
 import MapCard from '@/components/ui/mapCard.tsx'
 import EditMap from '@/components/ui/editMap.tsx'
 import { FormState } from '@/components/ui/editMap.tsx'
+import MapCardSkeleton from '@/components/ui/mapCardSkeleton.tsx'
 
 export default function Maps() {
   const [maps, setMaps] = useState<Map[]>([])
@@ -68,8 +69,10 @@ export default function Maps() {
   const onUpdate = async (map: Map, success?: boolean, error?: string) => {
     if (success) {
       setMaps((prev) => prev.map((x) => x.id === map.id ? map : x))
+      setLoading(false);
     } else if (error) {
       setError(error)
+      setLoading(false);
     } else {
       setLoading(true)
     }
@@ -94,9 +97,13 @@ export default function Maps() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {maps.map((map) => (
-          <MapCard key={map.id} map={map} onDelete={onDelete} onUpdate={onUpdate} />
-        ))}
+        {loading
+          ? Array.from({ length: limit }).map((_, i) => (
+              <MapCardSkeleton key={i} />
+            ))
+          : maps.map((map) => (
+              <MapCard key={map.id} map={map} onDelete={onDelete} onUpdate={onUpdate} />
+            ))}
       </div>
 
       {pagination && (
