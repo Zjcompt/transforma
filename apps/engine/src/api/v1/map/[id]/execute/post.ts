@@ -22,7 +22,13 @@ Fastify.post('/api/v1/map/:id/execute', async (req: FastifyRequest, res: Fastify
         Logger.error({ id, error: e }, 'Error inserting errored run');
       }
     })();
-    res.status(500).send({ error: e.message });
+    let errorMessage;
+    try {
+      errorMessage = JSON.parse(e.message);
+    } catch {
+      errorMessage = String(e.message);
+    }
+    res.status(500).send({ error: errorMessage });
     return;
   }
 

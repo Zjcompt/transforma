@@ -118,7 +118,9 @@ export default class Map implements IMap {
         Logger.debug({ id: this.id, schema: this.inputSchema }, 'Validating input against schema');
         const isValid = validator(input);
         if(!isValid) {
-          throw new Error('Input does not match schema');
+          // validator.errors is not typed, so we need to cast to any to access errors
+          const errors = (validator as any).errors;
+          throw new Error(JSON.stringify(errors));
         }
       }
     } else {
@@ -131,7 +133,8 @@ export default class Map implements IMap {
 
         const isValid = validator(input);
         if(!isValid) {
-          throw new Error('Input does not match schema');
+          const errors = (validator as any).errors;
+          throw new Error(JSON.stringify(errors));
         }
       }
 
