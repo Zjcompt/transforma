@@ -6,8 +6,9 @@
   **AI-Powered Data Mapper for Automated Workflows**
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue.svg)](https://www.typescriptlang.org/)
+  [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg?logo=nodedotjs)](https://nodejs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
+  [![PostgreSQL](https://img.shields.io/badge/postgresql-17+-blue.svg?logo=postgresql)](https://www.postgresql.org/)
 </div>
 
 ## Overview
