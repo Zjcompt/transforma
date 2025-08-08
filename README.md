@@ -87,7 +87,7 @@ function transform(inputObject) {
 
 ### Prerequisites
 
-- Node.js 22 or higher
+- Node.js 22+
 - PostgreSQL database
 - OpenAI API key
 
@@ -146,7 +146,7 @@ transforma/
 - **Logging**: Pino with pretty printing
 
 **Frontend (Manager)**
-- **Framework**: React 19 with TypeScript
+- **Framework**: React 19, shadcn/ui, Tailwind
 - **Build Tool**: Vite
 - **Development**: Hot Module Replacement (HMR)
 
@@ -225,7 +225,10 @@ GET /map?page=1&limit=10&search=profile
 
 #### Get/Delete Map by ID
 ```http
-GET, DELETE /map/{id}
+GET /map/{id}
+```
+```http
+DELETE /map/{id}
 ```
 
 #### Update Map by ID
@@ -236,15 +239,15 @@ PUT /map/{id}
 **Request Body:**
 ```json
 {
-  "name"?: string;
-  "type"?: 'jsonSchema' | 'json';
-  "inputSchema"?: string;
-  "outputSchema"?: string;
+  "name": "User Profile Transformation V2",
+  "type": "jsonSchema | json",
+  "inputSchema": "...",
+  "outputSchema": "..."
 }
 ```
 
 **Response:**
-```json
+```
 { ... Updated map object }
 ```
 
