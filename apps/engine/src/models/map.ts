@@ -153,7 +153,7 @@ export default class Map implements IMap {
   }
 
   async update() {
-    const rows = await postgresQuery<IMap[]>(`UPDATE maps SET "inputSchema" = $1, "outputSchema" = $2, "name" = $3, "type" =  $4, javascript = $5, "updatedAt" = NOW() WHERE id = $6`, [this.inputSchema, this.outputSchema, this.name, this.type, this.javascript, this.id]);
+    const rows = await postgresQuery<IMap[]>(`UPDATE maps SET "inputSchema" = $1, "outputSchema" = $2, "name" = $3, "type" =  $4, javascript = $5, "updatedAt" = NOW() WHERE id = $6 RETURNING *`, [this.inputSchema, this.outputSchema, this.name, this.type, this.javascript, this.id]);
 
     if(rows.length === 0) {
       throw new Error('Map not found');

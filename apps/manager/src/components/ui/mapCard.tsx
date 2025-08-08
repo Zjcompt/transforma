@@ -1,6 +1,9 @@
 import Map from "@/models/map.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Pencil, Trash2 } from "lucide-react";
+import EditMap from "./editMap.tsx";
+import { useState } from "react";
+import { FormState } from "./editMap.tsx";
 
 /**
  * Props for the MapCard component
@@ -10,14 +13,19 @@ import { Pencil, Trash2 } from "lucide-react";
  *   Call with only the id to indicate deletion is starting/loading.
  *   Call with (id, true) when deletion succeeds.
  *   Call with (id, false, error) when deletion fails, passing an error message.
+ * @param onUpdate - Function to update the map.
+ *   Call with (map) when update is starting/loading.
+ *   Call with (map, true) when update succeeds.
+ *   Call with (map, false, error) when update fails, passing an error message.
  */
 interface MapCardProps {
   map: Map;
-  openEdit: (m: Map) => void;
   onDelete: (id: string, success?: boolean, error?: string) => void;
+  onUpdate: (map: Map, success?: boolean, error?: string) => void;
 }
 
-export default function MapCard({ map, openEdit, onDelete }: MapCardProps) {
+export default function MapCard({ map, onDelete, onUpdate }: MapCardProps) {
+  const [showForm, setShowForm] = useState(false);
 
   const deleteMap = async () => {
     if (!confirm('Delete this map? This cannot be undone.')) return;
@@ -31,7 +39,19 @@ export default function MapCard({ map, openEdit, onDelete }: MapCardProps) {
     }
   }
 
-  return (
+  const submitForm = async (e: React.FormEvent<HTMLFormElement>, form: FormState) => {
+    e.preventDefault();
+    try {
+      setShowForm(false)
+      const updatedMap = await map.update(form)
+      onUpdate(updatedMap, true)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Failed to update map'
+      onUpdate(map, false, message)
+    }
+  }
+
+  return (<>
     <div key={map.id} className="border rounded-lg p-4 bg-card text-card-foreground shadow-sm">
       <div className="flex items-start justify-between">
         <div>
@@ -39,7 +59,7 @@ export default function MapCard({ map, openEdit, onDelete }: MapCardProps) {
           <div className="text-xs text-muted-foreground">{map.id}</div>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => openEdit(map)}>
+          <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
             <Pencil className="size-4" />
           </Button>
           <Button size="sm" variant="destructive" onClick={() => deleteMap()}>
@@ -62,5 +82,8 @@ export default function MapCard({ map, openEdit, onDelete }: MapCardProps) {
         </div>
       </div>
     </div>
+
+    {showForm && <EditMap map={map} setShowForm={setShowForm} submitForm={submitForm} />}
+  </>
   )
 }
