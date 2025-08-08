@@ -48,6 +48,7 @@ export default function Maps() {
 
   const submitForm = async (e: React.FormEvent<HTMLFormElement>, form: FormState) => {
     e.preventDefault()
+    setShowForm(false)
     try {
       setLoading(true)
       setError(null)
