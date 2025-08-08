@@ -4,6 +4,8 @@ import './api/v1/map/[id]/execute/post.js';
 import './api/v1/map/[id]/get.js';
 import './api/v1/map/get.js';
 import './api/v1/map/[id]/runs/get.js';
+import './api/v1/map/[id]/delete.js';
+import './api/v1/map/[id]/put.js';
 
 (async () => {
   let port = Number(process.env.PORT);

@@ -55,7 +55,7 @@ export default class Map implements IMap {
     const dataQuery = `
       SELECT * FROM maps 
       ${whereClause} 
-      ORDER BY createdAt DESC 
+      ORDER BY "createdAt" DESC 
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
     queryParams.push(limit, offset);

@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import cors from '@fastify/cors'
 
 const fastify = await Fastify({
   logger: {
@@ -37,6 +38,12 @@ const fastify = await Fastify({
       }
     }
   }
+});
+
+fastify.register(cors, {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 });
 
 export const logger = fastify.log;

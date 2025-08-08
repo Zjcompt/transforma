@@ -8,7 +8,7 @@ Fastify.post('/api/v1/map', async (req: FastifyRequest, res: FastifyReply) => {
     inputSchema: string,
     outputSchema: string,
     name: string,
-    type: 'jsonSchema' | 'csv'
+    type: 'jsonSchema' | 'json'
   }
 
   if(!inputSchema || !outputSchema || !name || !type) {
@@ -19,7 +19,7 @@ Fastify.post('/api/v1/map', async (req: FastifyRequest, res: FastifyReply) => {
     return res.status(400).send({ error: 'Invalid schema' });
   }
 
-  if(type !== 'jsonSchema' && type !== 'csv') {
+  if(type !== 'jsonSchema' && type !== 'json') {
     return res.status(400).send({ error: 'Invalid type' });
   }
 
