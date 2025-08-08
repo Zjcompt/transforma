@@ -27,7 +27,15 @@ export class LRUCache<K, V> {
       if(this.cache.size > this.capacity) {
         this.evictLRU();
       }
-    }
+    } else {
+      const node: CacheNode<K, V> = { key, value, prev: null, next: null };
+      this.cache.set(key, node);
+      this.addToFront(node);
+
+      if(this.cache.size > this.capacity) {
+        this.evictLRU();
+      }
+    } 
   }
 
   get(key: K): V | undefined {
