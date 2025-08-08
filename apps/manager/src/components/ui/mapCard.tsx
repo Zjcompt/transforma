@@ -41,6 +41,7 @@ export default function MapCard({ map, onDelete, onUpdate }: MapCardProps) {
 
   const submitForm = async (e: React.FormEvent<HTMLFormElement>, form: FormState) => {
     e.preventDefault();
+    onUpdate(map)
     try {
       setShowForm(false)
       const updatedMap = await map.update(form)
