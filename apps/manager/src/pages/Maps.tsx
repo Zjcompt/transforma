@@ -1,47 +1,24 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button.tsx'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
-
-type MapItem = {
-  id: string
-  name: string
-  type: string
-  inputSchema: string
-  outputSchema: string
-  javascript: string
-  timesRan: number
-  lastRun: string
-  updatedAt: string
-  createdAt: string
-}
-
-type PaginatedMaps = {
-  data: MapItem[]
-  pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-    hasNext: boolean
-    hasPrev: boolean
-  }
-}
+import Map from '@/models/map.ts'
+import { Pagination } from '@transforma/imports/interfaces/pagination.ts'
 
 type FormState = {
   id?: string
   name: string
-  type: 'jsonSchema' | 'csv'
+  type: 'jsonSchema' | 'json'
   inputSchema: string
   outputSchema: string
 }
 
 export default function Maps() {
-  const [items, setItems] = useState<MapItem[]>([])
+  const [maps, setMaps] = useState<Map[]>([])
   const [page, setPage] = useState(1)
   const [limit] = useState(12)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [pagination, setPagination] = useState<PaginatedMaps['pagination'] | null>(null)
+  const [pagination, setPagination] = useState<Pagination | null>(null)
 
   const [showForm, setShowForm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -51,27 +28,26 @@ export default function Maps() {
   )
   const [form, setForm] = useState<FormState>(initialForm)
 
-  const fetchMaps = async (pageParam: number = page) => {
-    try {
-      setLoading(true)
-      setError(null)
-      const res = await fetch(`http://localhost:3000/api/v1/map?page=${pageParam}&limit=${limit}`)
-      if (!res.ok) throw new Error('Failed to fetch maps')
-      const json: PaginatedMaps = await res.json()
-      setItems(json.data)
-      setPagination(json.pagination)
+  const fetchMaps = useCallback(
+    async (pageParam: number, limitParam: number) => {
+      try {
+        setLoading(true)
+        setError(null)
+        const maps = await Map.getMaps(pageParam, limitParam)
+      setMaps(maps.maps)
+      setPagination(maps.pagination)
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Error fetching maps'
       setError(message)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
 
   useEffect(() => {
-    fetchMaps(page)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
+    fetchMaps(page, limit)
+  }, [page, limit, fetchMaps])
 
   const openAdd = () => {
     setIsEditing(false)
@@ -79,10 +55,9 @@ export default function Maps() {
     setShowForm(true)
   }
 
-  const openEdit = (m: MapItem) => {
+  const openEdit = (m: Map) => {
     setIsEditing(true)
-    const mapType: FormState['type'] = m.type === 'csv' || m.type === 'jsonSchema' ? (m.type as FormState['type']) : 'jsonSchema'
-    setForm({ id: m.id, name: m.name, type: mapType, inputSchema: m.inputSchema, outputSchema: m.outputSchema })
+    setForm({ id: m.id, name: m.name, type: m.type, inputSchema: m.inputSchema, outputSchema: m.outputSchema })
     setShowForm(true)
   }
 
@@ -93,34 +68,16 @@ export default function Maps() {
       setError(null)
       if (isEditing && form.id) {
         const { id, ...update } = form
-        const res = await fetch(`/api/v1/map/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(update),
-        })
-        if (!res.ok) throw new Error('Failed to update map')
+        const map = maps.find((x) => x.id === id)
+        if (!map) throw new Error('Map not found')
+        await map.update(update)
       } else {
-        const res = await fetch('/api/v1/map', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
-        })
-        if (!res.ok) {
-          let errMsg = 'Failed to create map'
-          const contentType = res.headers.get('content-type') || ''
-          if (contentType.includes('application/json')) {
-            const j = (await res.json()) as { error?: string }
-            if (j?.error) errMsg = j.error
-          } else {
-            const t = await res.text()
-            if (t) errMsg = t
-          }
-          throw new Error(errMsg)
-        }
+        const map = await Map.create(form)
+        setMaps((prev) => [...prev, map])
       }
       setShowForm(false)
       setForm(initialForm)
-      fetchMaps(page)
+      fetchMaps(page, limit)
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to save map'
       setError(message)
@@ -134,11 +91,11 @@ export default function Maps() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(`/api/v1/map/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete map')
-      setItems((prev) => prev.filter((x) => x.id !== id))
-      // Optionally refresh pagination if needed
-      fetchMaps(page)
+      const map = maps.find((x) => x.id === id)
+      if (!map) throw new Error('Map not found')
+      await map.delete()
+      setMaps((prev) => prev.filter((x) => x.id !== id))
+      fetchMaps(page, limit)
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to delete map'
       setError(message)
@@ -166,7 +123,7 @@ export default function Maps() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((m) => (
+        {maps.map((m) => (
           <div key={m.id} className="border rounded-lg p-4 bg-card text-card-foreground shadow-sm">
             <div className="flex items-start justify-between">
               <div>
@@ -259,7 +216,7 @@ export default function Maps() {
                     required
                   >
                     <option value="jsonSchema">jsonSchema</option>
-                    <option value="csv">csv</option>
+                    <option value="json">json</option>
                   </select>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { Fastify } from "../../../controllers/fastify.js";
 import Map from "../../../models/map.js";
+import { Pagination } from "@transforma/imports/interfaces/pagination.js";
 
 interface QueryParams {
   page?: string;
@@ -10,14 +11,7 @@ interface QueryParams {
 
 interface PaginatedResponse {
   data: Map[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+  pagination: Pagination;
 }
 
 Fastify.get('/api/v1/map', async (req: FastifyRequest, res: FastifyReply) => {

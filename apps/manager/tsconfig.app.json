@@ -5,6 +5,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
+      "@transforma/imports/*": ["../../packages/imports/*"],
       "@/*": ["./src/*"]
     }
   },

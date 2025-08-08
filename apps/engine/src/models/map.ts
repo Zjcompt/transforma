@@ -151,4 +151,34 @@ export default class Map implements IMap {
 
     return output;
   }
+
+  async update() {
+    const rows = await postgresQuery<IMap[]>(`UPDATE maps SET "inputSchema" = $1, "outputSchema" = $2, "name" = $3, "type" =  $4, javascript = $5, "updatedAt" = NOW() WHERE id = $6`, [this.inputSchema, this.outputSchema, this.name, this.type, this.javascript, this.id]);
+
+    if(rows.length === 0) {
+      throw new Error('Map not found');
+    }
+
+    Logger.debug({
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      inputSchema: this.inputSchema,
+      outputSchema: this.outputSchema
+    }, 'Updated Map');
+
+    return this;
+  }
+
+  async delete() {
+    await postgresQuery('DELETE FROM runs WHERE "mapId" = $1', [this.id]);
+    await postgresQuery('DELETE FROM errored_runs WHERE "mapId" = $1', [this.id]);
+    await postgresQuery('DELETE FROM maps WHERE id = $1', [this.id]);
+
+    executionCache.delete(this.id);
+
+    Logger.debug({ id: this.id }, 'Deleted Map');
+
+    return true;
+  }
 }
