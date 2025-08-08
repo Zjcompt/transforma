@@ -128,11 +128,15 @@ export default class Map implements IMap {
       if(this.type === 'jsonSchema') {
         const schema = JSON.parse(this.inputSchema);
         validator = ajv.compile(schema);
+
+        const isValid = validator(input);
+        if(!isValid) {
+          throw new Error('Input does not match schema');
+        }
       }
 
       executionCache.add(this.id, { script, validator });
     }
-
 
     if(!script) {
       throw new Error('Script not found, something went terribly wrong');
@@ -184,7 +188,6 @@ export default class Map implements IMap {
     await postgresQuery('DELETE FROM maps WHERE id = $1', [this.id]);
 
     executionCache.delete(this.id);
-
     Logger.debug({ id: this.id }, 'Deleted Map');
 
     return true;
