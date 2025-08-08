@@ -24,6 +24,103 @@ Transforma is a powerful data transformation platform that leverages AI to autom
 - 🔍 **Search & Pagination**: Easily manage and discover existing data maps
 - 🏗️ **Monorepo Architecture**: Scalable architecture with shared packages and clear separation of concerns
 
+## How It Works
+
+1. **Schema Definition**: You provide input and output schemas
+2. **AI Generation**: Transforma uses OpenAI to generate a JavaScript transformation function
+3. **Validation**: The generated function includes robust validation logic
+4. **Execution**: Input data is processed through the generated function with performance caching
+5. **Analytics**: Execution metrics are tracked for monitoring and optimization
+
+### Example Transformation
+
+**Input Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "user_name": {"type": "string"},
+    "user_email": {"type": "string"},
+    "registration_date": {"type": "string"}
+  },
+  "required": ["user_name", "user_email"]
+}
+```
+
+**Output Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "email": {"type": "string"},
+    "registeredAt": {"type": "string"}
+  },
+  "required": ["name", "email"]
+}
+```
+
+**Generated Function:**
+```javascript
+function transform(inputObject) {
+  if (!inputObject || typeof inputObject !== 'object') {
+    throw new Error("Error: Input must be an object");
+  }
+  
+  if (inputObject.user_name == null) {
+    throw new Error("Error: user_name is required");
+  }
+  
+  if (inputObject.user_email == null) {
+    throw new Error("Error: user_email is required");
+  }
+  
+  return {
+    name: inputObject.user_name,
+    email: inputObject.user_email,
+    registeredAt: inputObject.registration_date || null
+  };
+}
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22 or higher
+- PostgreSQL database
+- OpenAI API key
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/zjcompt/transforma.git
+   cd transforma
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   Create a `.env` file in `apps/engine/`:
+   ```env
+   PORT=3000
+   ADDRESS=localhost
+   DATABASE_URL=postgresql://username:password@localhost:5432/transforma
+   OPENAI_API_KEY=your_openai_api_key_here
+   OPENAI_MODEL=your_desired_model (defaults to 4.1)
+   EXECUTION_CACHE_SIZE=100 (defaults to 100)
+   ```
+
+4. **Start development servers**
+   ```bash
+   # Start all applications
+   npm run dev
+   ```
+
 ## Architecture
 
 Transforma is built as a modern TypeScript monorepo using Turborepo:
@@ -58,42 +155,6 @@ transforma/
 - **Package Manager**: npm workspaces
 - **Linting**: ESLint with shared configurations
 - **Formatting**: Prettier
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 22 or higher
-- PostgreSQL database
-- OpenAI API key
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/zjcompt/transforma.git
-   cd transforma
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   Create a `.env` file in `apps/engine/`:
-   ```env
-   PORT=3000
-   ADDRESS=localhost
-   DATABASE_URL=postgresql://username:password@localhost:5432/transforma
-   OPENAI_API_KEY=your_openai_api_key_here
-   ```
-
-4. **Start development servers**
-   ```bash
-   # Start all applications
-   npm run dev
-   ```
 
 ## API Documentation
 
@@ -162,73 +223,34 @@ POST /map/{id}/execute
 GET /map?page=1&limit=10&search=profile
 ```
 
-#### Get Map by ID
+#### Get/Delete Map by ID
 ```http
-GET /map/{id}
+GET, DELETE /map/{id}
+```
+
+#### Update Map by ID
+```http
+PUT /map/{id}
+```
+
+**Request Body:**
+```json
+{
+  "name"?: string;
+  "type"?: 'jsonSchema' | 'json';
+  "inputSchema"?: string;
+  "outputSchema"?: string;
+}
+```
+
+**Response:**
+```json
+{ ... Updated map object }
 ```
 
 #### Get Map Execution History
 ```http
 GET /map/{id}/runs?page=1&limit=10
-```
-
-## How It Works
-
-1. **Schema Definition**: You provide input and output schemas
-2. **AI Generation**: Transforma uses OpenAI to generate a JavaScript transformation function
-3. **Validation**: The generated function includes robust validation logic
-4. **Execution**: Input data is processed through the generated function with performance caching
-5. **Analytics**: Execution metrics are tracked for monitoring and optimization
-
-### Example Transformation
-
-**Input Schema:**
-```json
-{
-  "type": "object",
-  "properties": {
-    "user_name": {"type": "string"},
-    "user_email": {"type": "string"},
-    "registration_date": {"type": "string"}
-  },
-  "required": ["user_name", "user_email"]
-}
-```
-
-**Output Schema:**
-```json
-{
-  "type": "object",
-  "properties": {
-    "name": {"type": "string"},
-    "email": {"type": "string"},
-    "registeredAt": {"type": "string"}
-  },
-  "required": ["name", "email"]
-}
-```
-
-**Generated Function:**
-```javascript
-function transform(inputObject) {
-  if (!inputObject || typeof inputObject !== 'object') {
-    throw new Error("Error: Input must be an object");
-  }
-  
-  if (inputObject.user_name == null) {
-    throw new Error("Error: user_name is required");
-  }
-  
-  if (inputObject.user_email == null) {
-    throw new Error("Error: user_email is required");
-  }
-  
-  return {
-    name: inputObject.user_name,
-    email: inputObject.user_email,
-    registeredAt: inputObject.registration_date || null
-  };
-}
 ```
 
 ## License
