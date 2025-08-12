@@ -156,14 +156,6 @@ export default class Map implements IMap {
       output
     }, 'Executed Map');
 
-    (async () => {
-      try {
-        await postgresQuery(`UPDATE maps SET "timesRan" = "timesRan" + 1, "lastRun" = NOW() WHERE id = $1`, [this.id]);
-      } catch (e) {
-        Logger.error({ id: this.id, error: e }, 'Error updating timesRan and lastRun');
-      }
-    })();
-
     return output;
   }
 

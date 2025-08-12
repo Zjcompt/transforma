@@ -13,6 +13,15 @@ Fastify.post('/api/v1/map/:id/execute', async (req: FastifyRequest, res: Fastify
   let output: any;
   try{
     const map = await Map.get(id);
+
+    (async () => {
+      try {
+        await postgresQuery(`UPDATE maps SET "timesRan" = "timesRan" + 1, "lastRun" = NOW() WHERE id = $1`, [id]);
+      } catch (e) {
+        Logger.error({ id, error: e }, 'Error updating timesRan and lastRun');
+      }
+    })();
+
     output = await map.run(input);
   }catch(e: any){
     (async () => {
