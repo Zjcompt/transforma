@@ -54,7 +54,8 @@ export default function ExecuteMap({ show, setShow, map }: ExecuteMapProps) {
 
     if (!response.ok) {
       const data = await response.json()
-      setError(`Failed to execute map: ${data.message ? data.message : data.error}`)
+      const errorMessage = data.message ? data.message : JSON.stringify(data.error, null, 2)
+      setError(`Failed to execute map: ${errorMessage}`)
       setLoading(false)
       return
     }
