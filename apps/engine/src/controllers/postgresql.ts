@@ -26,7 +26,9 @@ const checkTables = async () => {
 
   await pool.query('CREATE INDEX IF NOT EXISTS idx_errored_runs_mapId ON errored_runs ("mapId")');
   await pool.query('CREATE INDEX IF NOT EXISTS idx_runs_mapId ON runs ("mapId")');
+  await pool.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
   await pool.query('CREATE INDEX IF NOT EXISTS idx_maps_name ON maps USING gin ("name" gin_trgm_ops)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_maps_timesRan ON maps ("timesRan")');
 
   Logger.info({}, 'Indexes created and checked');
 }
