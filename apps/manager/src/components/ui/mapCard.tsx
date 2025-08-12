@@ -1,9 +1,10 @@
 import Map from "@/models/map.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Play, Trash2 } from "lucide-react";
 import EditMap from "./editMap.tsx";
 import { useState } from "react";
 import { FormState } from "./editMap.tsx";
+import ExecuteMap from "./executeMap.tsx";
 
 /**
  * Props for the MapCard component
@@ -26,7 +27,7 @@ interface MapCardProps {
 
 export default function MapCard({ map, onDelete, onUpdate }: MapCardProps) {
   const [showForm, setShowForm] = useState(false);
-
+  const [showExecuteMap, setShowExecuteMap] = useState(false);  
   const deleteMap = async () => {
     if (!confirm('Delete this map? This cannot be undone.')) return;
     onDelete(map.id)
@@ -53,6 +54,7 @@ export default function MapCard({ map, onDelete, onUpdate }: MapCardProps) {
   }
 
   return (<>
+    <ExecuteMap show={showExecuteMap} setShow={setShowExecuteMap} map={map} />
     <div key={map.id} className="border rounded-lg p-4 bg-card text-card-foreground shadow-sm">
       <div className="flex items-start justify-between">
         <div>
@@ -60,6 +62,9 @@ export default function MapCard({ map, onDelete, onUpdate }: MapCardProps) {
           <div className="text-xs text-muted-foreground">{map.id}</div>
         </div>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setShowExecuteMap(true)}>
+            <Play className="size-4" />
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowForm(true)}>
             <Pencil className="size-4" />
           </Button>
