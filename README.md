@@ -270,7 +270,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Roadmap
 
 - [x] Complete React frontend
-- [ ] OpenAPI Documentation
+- [x] OpenAPI Documentation
 - [ ] Support for additional data formats (CSV, XML, YAML)
 - [ ] Real-time transformation preview
 - [ ] Batch processing capabilities
