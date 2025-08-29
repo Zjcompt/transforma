@@ -43,7 +43,7 @@ Fastify.get('/api/v1/runs', async (req: FastifyRequest, res: FastifyReply) => {
   const total = parseInt(countResult[0]?.total || '0', 10);
   
   const dataQuery = `
-    SELECT r.*, m.name as mapName 
+    SELECT r.*, m.name as "mapName"
     FROM runs r
     LEFT JOIN maps m ON r."mapId" = m.id
     ${whereClause} 

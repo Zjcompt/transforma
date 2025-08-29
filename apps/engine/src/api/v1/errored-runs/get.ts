@@ -43,7 +43,7 @@ Fastify.get('/api/v1/errored-runs', async (req: FastifyRequest, res: FastifyRepl
   const total = parseInt(countResult[0]?.total || '0', 10);
   
   const dataQuery = `
-    SELECT er.*, m.name as mapName 
+    SELECT er.*, m.name as "mapName"
     FROM errored_runs er
     LEFT JOIN maps m ON er."mapId" = m.id
     ${whereClause} 
