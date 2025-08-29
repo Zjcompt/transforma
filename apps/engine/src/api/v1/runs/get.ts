@@ -33,7 +33,7 @@ Fastify.get('/api/v1/runs', async (req: FastifyRequest, res: FastifyReply) => {
   let paramIndex = 1;
   
   if (search && search.trim()) {
-    whereClause = 'WHERE input::text ILIKE $1';
+    whereClause = 'WHERE (input::text ILIKE $1 OR output::text ILIKE $1)';
     queryParams.push(`%${search.trim()}%`);
     paramIndex++;
   }
