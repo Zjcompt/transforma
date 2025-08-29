@@ -6,6 +6,8 @@ import './api/v1/map/get.js';
 import './api/v1/map/[id]/runs/get.js';
 import './api/v1/map/[id]/delete.js';
 import './api/v1/map/[id]/put.js';
+import './api/v1/runs/get.js';
+import './api/v1/errored-runs/get.js';
 import './api/v1/reports/index.js';
 
 (async () => {
