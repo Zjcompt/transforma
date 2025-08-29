@@ -1,0 +1,833 @@
+openapi: 3.0.3
+info:
+  title: Transforma Engine API
+  description: |
+    API for the Transforma Engine - a service for creating, managing and executing data transformation maps.
+    
+    This API allows you to:
+    - Create and manage transformation maps with input/output schemas
+    - Execute transformations on data
+    - Track execution runs and errors
+    - Generate reports on usage and performance
+  version: 1.0.0
+  contact:
+    name: Transforma API
+  license:
+    name: MIT
+    
+servers:
+  - url: http://localhost:3000
+    description: Local server
+
+paths:
+  /:
+    get:
+      summary: Health check endpoint
+      description: Returns a simple health check message
+      operationId: healthCheck
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Healthcheck"
+
+  /api/v1/map:
+    get:
+      summary: List all maps
+      description: Get a paginated list of all transformation maps with optional search
+      operationId: getMaps
+      tags:
+        - maps
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starts from 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page (max 100)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: search
+          in: query
+          description: Search term to filter maps by name
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMapsResponse'
+    
+    post:
+      summary: Create a new map
+      description: Create a new transformation map with input and output schemas
+      operationId: createMap
+      tags:
+        - maps
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMapRequest'
+      responses:
+        '201':
+          description: Map created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Map'
+        '400':
+          description: Bad request - missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/map/{id}:
+    get:
+      summary: Get a specific map
+      description: Retrieve a single transformation map by its ID
+      operationId: getMap
+      tags:
+        - maps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the map
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Map'
+        '404':
+          description: Map not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    put:
+      summary: Update a map
+      description: Update an existing transformation map
+      operationId: updateMap
+      tags:
+        - maps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the map
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMapRequest'
+      responses:
+        '200':
+          description: Map updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Map'
+        '400':
+          description: Bad request - no fields to update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Map not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      summary: Delete a map
+      description: Delete a transformation map and all its associated runs
+      operationId: deleteMap
+      tags:
+        - maps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the map
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Map deleted successfully
+        '404':
+          description: Map not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/map/{id}/execute:
+    post:
+      summary: Execute a transformation
+      description: Execute a transformation map with the provided input data
+      operationId: executeMap
+      tags:
+        - maps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the map
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                input:
+                  description: The input data to transform
+                  oneOf:
+                    - type: object
+                    - type: array
+                    - type: string
+                    - type: number
+                    - type: boolean
+              required:
+                - input
+      responses:
+        '200':
+          description: Transformation executed successfully
+          content:
+            application/json:
+              schema:
+                description: The transformed output data
+                oneOf:
+                  - type: object
+                  - type: array
+                  - type: string
+                  - type: number
+                  - type: boolean
+        '500':
+          description: Execution error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    oneOf:
+                      - type: string
+                      - type: object
+                      - type: array
+
+  /api/v1/map/{id}/runs:
+    get:
+      summary: Get runs for a specific map
+      description: Get a paginated list of all successful runs for a specific map
+      operationId: getMapRuns
+      tags:
+        - runs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the map
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Page number (starts from 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page (max 100)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: search
+          in: query
+          description: Search term to filter runs by input content
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRunsResponse'
+
+  /api/v1/runs:
+    get:
+      summary: Get all runs
+      description: Get a paginated list of all successful runs across all maps
+      operationId: getAllRuns
+      tags:
+        - runs
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starts from 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page (max 100)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: search
+          in: query
+          description: Search term to filter runs by input or output content
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRunsWithMapNameResponse'
+
+  /api/v1/errored-runs:
+    get:
+      summary: Get all errored runs
+      description: Get a paginated list of all failed execution runs
+      operationId: getErroredRuns
+      tags:
+        - runs
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starts from 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page (max 100)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: search
+          in: query
+          description: Search term to filter errored runs by input or error content
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedErroredRunsResponse'
+
+  /api/v1/reports/total-maps:
+    get:
+      summary: Get total maps count
+      description: Get the total number of transformation maps
+      operationId: getTotalMaps
+      tags:
+        - reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TotalCountResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/reports/total-runs:
+    get:
+      summary: Get total runs count
+      description: Get the total number of successful runs
+      operationId: getTotalRuns
+      tags:
+        - reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TotalCountResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/reports/total-errors:
+    get:
+      summary: Get total errors count
+      description: Get the total number of errored runs
+      operationId: getTotalErrors
+      tags:
+        - reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TotalCountResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/reports/total-successes:
+    get:
+      summary: Get total successes count
+      description: Get the total number of successful runs
+      operationId: getTotalSuccesses
+      tags:
+        - reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TotalCountResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/reports/top-maps:
+    get:
+      summary: Get top maps by execution count
+      description: Get the top 10 maps ordered by number of times executed
+      operationId: getTopMaps
+      tags:
+        - reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  topMaps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the map
+                        total:
+                          type: string
+                          description: Number of times the map has been executed
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/reports/most-errors:
+    get:
+      summary: Get maps with most errors
+      description: Get maps ordered by number of execution errors
+      operationId: getMostErrors
+      tags:
+        - reports
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mostErrors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the map
+                        total:
+                          type: string
+                          description: Number of errors for this map
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Map:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the map
+        name:
+          type: string
+          description: Human-readable name for the map
+        type:
+          type: string
+          enum: [json, jsonSchema]
+          description: Type of validation to perform on input
+        inputSchema:
+          type: string
+          description: JSON schema or example JSON for input validation
+        outputSchema:
+          type: string
+          description: JSON schema or example JSON for expected output
+        javascript:
+          type: string
+          description: Generated JavaScript transformation function
+        timesRan:
+          type: number
+          description: Number of times this map has been executed
+        lastRun:
+          type: string
+          format: date-time
+          description: Timestamp of the last execution
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the map was last updated
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the map was created
+      required:
+        - id
+        - name
+        - type
+        - inputSchema
+        - outputSchema
+        - javascript
+        - timesRan
+        - lastRun
+        - updatedAt
+        - createdAt
+
+    CreateMapRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable name for the map
+        type:
+          type: string
+          enum: [json, jsonSchema]
+          description: Type of validation to perform on input
+        inputSchema:
+          type: string
+          description: JSON schema or example JSON for input validation
+        outputSchema:
+          type: string
+          description: JSON schema or example JSON for expected output
+      required:
+        - name
+        - type
+        - inputSchema
+        - outputSchema
+
+    UpdateMapRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable name for the map
+        type:
+          type: string
+          enum: [json, jsonSchema]
+          description: Type of validation to perform on input
+        inputSchema:
+          type: string
+          description: JSON schema or example JSON for input validation
+        outputSchema:
+          type: string
+          description: JSON schema or example JSON for expected output
+      minProperties: 1
+
+    Run:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the run
+        mapId:
+          type: string
+          format: uuid
+          description: ID of the map that was executed
+        input:
+          type: object
+          description: Input data that was provided
+        output:
+          type: object
+          description: Output data that was generated
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the run was executed
+      required:
+        - id
+        - mapId
+        - input
+        - output
+        - createdAt
+
+    RunWithMapName:
+      allOf:
+        - $ref: '#/components/schemas/Run'
+        - type: object
+          properties:
+            mapName:
+              type: string
+              description: Name of the map that was executed
+
+    ErroredRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the errored run
+        mapId:
+          type: string
+          format: uuid
+          description: ID of the map that failed to execute
+        input:
+          type: object
+          description: Input data that was provided
+        error:
+          type: string
+          description: Error message from the failed execution
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+      required:
+        - id
+        - mapId
+        - input
+        - error
+        - createdAt
+
+    ErroredRunWithMapName:
+      allOf:
+        - $ref: '#/components/schemas/ErroredRun'
+        - type: object
+          properties:
+            mapName:
+              type: string
+              description: Name of the map that failed to execute
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          description: Current page number
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Number of items per page
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of items
+        totalPages:
+          type: integer
+          minimum: 0
+          description: Total number of pages
+        hasNext:
+          type: boolean
+          description: Whether there is a next page
+        hasPrev:
+          type: boolean
+          description: Whether there is a previous page
+      required:
+        - page
+        - limit
+        - total
+        - totalPages
+        - hasNext
+        - hasPrev
+
+    PaginatedMapsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Map'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+
+    PaginatedRunsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Run'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+
+    PaginatedRunsWithMapNameResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunWithMapName'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+
+    PaginatedErroredRunsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErroredRunWithMapName'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+      required:
+        - data
+        - pagination
+
+    TotalCountResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          minimum: 0
+          description: The total count
+      required:
+        - total
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+      required:
+        - error
+
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    BadRequest:
+      description: Bad request - invalid or missing parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+tags:
+  - name: health
+    description: Health check operations
+  - name: maps
+    description: Transformation map operations
+  - name: runs
+    description: Execution run operations
+  - name: reports
+    description: Analytics and reporting operations
