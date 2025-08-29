@@ -367,13 +367,13 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
-function TextChart({ data, loading }: { data: string, loading: boolean }) {
+function TextChart({ data, loading, realTotal }: { data: string, loading: boolean, realTotal: number }) {
   if (loading) {
     return <div className="relative aspect-square w-full h-full">
       <Skeleton className="mx-auto text-2xl font-bold w-1/2 h-1/3 absolute top-[calc(50%+20px)] left-1/2 -translate-x-1/2 -translate-y-[100%]" />
     </div>
   }
-  return <div className="relative aspect-square w-full h-full">
+  return <div className="relative aspect-square w-full h-full select-none" title={`${realTotal}`}>
     <div className="font-bold text-center absolute top-[calc(50%-25px)] left-1/2 -translate-x-1/2 -translate-y-1/2 text-6xl">{data}</div>
   </div>
 }
