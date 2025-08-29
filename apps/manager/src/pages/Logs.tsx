@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button.tsx'
 import { Input } from '@/components/ui/input.tsx'
-import { Badge } from '@/components/ui/badge.tsx'
 import { Search, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
 import Run, { ErroredRun } from '@/models/run.ts'
 import { Pagination as PaginationType } from '@transforma/imports/interfaces/pagination.ts'
@@ -55,18 +54,24 @@ export default function Logs() {
       }
     }, [])
 
-  // Debounce search input to avoid excessive requests
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearch(search.trim()), 300)
+    if (search.trim()) {
+      setLoading(true)
+      setError(null)
+      setPagination(null)
+      setRuns([])
+      setErroredRuns([])
+    }
+    const id = setTimeout(() => setDebouncedSearch(search.trim()), 1000)
     return () => clearTimeout(id)
   }, [search])
 
-  // Fetch data when dependencies change
   useEffect(() => {
-    setPage(1) // Reset to first page when switching types or searching
+    setPage(1)
   }, [logType, debouncedSearch])
 
   useEffect(() => {
+    setPagination(null)
     if (logType === 'success') {
       fetchRuns(page, limit, debouncedSearch || undefined)
     } else {
@@ -114,9 +119,6 @@ export default function Logs() {
           >
             <CheckCircle className="h-4 w-4" />
             Successful Runs
-            {pagination && logType === 'success' && (
-              <Badge variant="secondary">{pagination.total}</Badge>
-            )}
           </Button>
           <Button
             onClick={() => setLogType('error')}
@@ -126,9 +128,6 @@ export default function Logs() {
           >
             <AlertCircle className="h-4 w-4" />
             Errored Runs
-            {pagination && logType === 'error' && (
-              <Badge variant="secondary">{pagination.total}</Badge>
-            )}
           </Button>
         </div>
 
@@ -154,7 +153,6 @@ export default function Logs() {
       {/* Content */}
       <div className="space-y-4">
         {loading && currentEntries.length === 0 ? (
-          // Loading skeletons
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="border rounded-lg p-4 space-y-3">
               <div className="flex items-center justify-between">
@@ -187,7 +185,6 @@ export default function Logs() {
             </p>
           </div>
         ) : (
-          // Log entries
           currentEntries.map((entry) => (
             <LogEntry key={entry.id} entry={entry} type={logType} />
           ))
