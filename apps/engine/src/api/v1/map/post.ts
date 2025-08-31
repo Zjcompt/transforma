@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { Fastify } from "../../../controllers/fastify.js";
-import Map from "../../../models/map.js";
+import { Fastify } from "../../../controllers/fastify.ts";
+import Map from "../../../models/map.ts";
 import { randomUUID } from 'crypto';
 
 Fastify.post('/api/v1/map', async (req: FastifyRequest, res: FastifyReply) => {

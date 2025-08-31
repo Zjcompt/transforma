@@ -1,6 +1,6 @@
-import './totalMaps/get.js';
-import './totalRuns/get.js';
-import './totalErrors/get.js';
-import './totalSuccesses/get.js';
-import './topMaps/get.js';
-import './mostErrors/get.js';
+import './totalMaps/get.ts';
+import './totalRuns/get.ts';
+import './totalErrors/get.ts';
+import './totalSuccesses/get.ts';
+import './topMaps/get.ts';
+import './mostErrors/get.ts';

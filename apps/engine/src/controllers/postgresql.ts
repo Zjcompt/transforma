@@ -1,6 +1,6 @@
 import { FastifyBaseLogger } from 'fastify'
 import { Pool } from 'pg'
-import { Logger } from './fastify.js';
+import { Logger } from './fastify.ts';
  
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL

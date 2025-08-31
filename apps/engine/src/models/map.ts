@@ -1,12 +1,12 @@
-import { IMap } from '@transforma/imports/interfaces/map.js';
-import { createMapFunction } from '../controllers/aiGenerator.js';
-import { postgresQuery } from '../controllers/postgresql.js';
+import { IMap } from '@transforma/imports/interfaces/map.ts';
+import { createMapFunction } from '../controllers/aiGenerator.ts';
+import { postgresQuery } from '../controllers/postgresql.ts';
 import vm from 'vm';
-import { executionCache } from 'src/controllers/executionCache.js';
-import { Logger } from 'src/controllers/fastify.js';
+import { executionCache } from 'src/controllers/executionCache.ts';
+import { Logger } from 'src/controllers/fastify.ts';
 import fs from 'fs';
 import path from 'path';
-import ajv from 'src/controllers/ajv.js';
+import ajv from 'src/controllers/ajv.ts';
 
 export default class Map implements IMap {
   id: string;
