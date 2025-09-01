@@ -1,0 +1,27 @@
+FROM node:24-alpine AS base
+
+FROM base AS pruner
+
+WORKDIR /app
+
+COPY . .
+RUN npx turbo prune --scope=@transforma/manager --docker
+
+FROM base AS builder
+
+WORKDIR /app
+
+COPY --from=pruner /app/out/full/ .
+
+RUN npm install
+RUN npx turbo run build --filter=@transforma/manager
+
+FROM nginx:alpine AS runner
+
+WORKDIR /app
+
+COPY --from=builder /app/apps/manager/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

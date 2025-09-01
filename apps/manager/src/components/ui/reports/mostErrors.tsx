@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
-  ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
