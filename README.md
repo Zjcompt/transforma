@@ -91,14 +91,20 @@ The easiest way to run Transforma is using Docker Compose, which sets up all ser
 
 #### Setup
 
-1. **Create secrets directory and files**
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/zjcompt/transforma.git
+   cd transforma
+   ```
+
+2. **Create secrets directory and files**
    ```bash
    mkdir secrets
    echo "your_database_password_here" > secrets/db_password.txt
    echo "your_openai_api_key_here" > secrets/open_api_key.txt
    ```
 
-2. **Build and start all services**
+3. **Build and start all services**
    ```bash
    docker-compose up --build
    ```
