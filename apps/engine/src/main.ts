@@ -12,7 +12,7 @@ import './api/v1/reports/index.ts';
 
 (async () => {
   let port = Number(process.env.PORT);
-  const address = process.env.ADDRESS || '';
+  const address = process.env.ADDRESS || 'localhost';
 
   if (!port || isNaN(port) || port < 1 || port > 65535) {
     Fastify.log.warn('Invalid or no port enviornment variable found. Using default.')

@@ -2,9 +2,10 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod.js";
 import { Logger } from "./fastify.js";
+import * as fs from 'fs';
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
+  apiKey: process.env.OPEN_API_KEY_FILE ? fs.readFileSync(process.env.OPEN_API_KEY_FILE, "utf-8").trim() : (process.env.OPENAI_API_KEY || ''),
 });
 
 export const createMapFunction = async (systemPrompt: string): Promise<string> => {

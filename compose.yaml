@@ -1,0 +1,55 @@
+services:
+  transforma-engine:
+    image: transforma/engine
+    build:
+      dockerfile: dockerfile.engine
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV: development
+      ADDRESS: 0.0.0.0
+      PORT: 3000
+      OPEN_API_KEY_FILE: /run/secrets/open_api_key
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_USER: admin
+      POSTGRES_DB: transforma
+      POSTGRES_HOST: db
+    secrets:
+      - db_password
+      - open_api_key
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+  transforma-manager:
+    image: transforma/manager
+    build:
+      dockerfile: dockerfile.manager
+    ports:
+      - 80:80
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_USER: admin
+      POSTGRES_DB: transforma
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    secrets:
+      - db_password
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  open_api_key:
+    file: ./secrets/open_api_key.txt
+
+volumes:
+  db_data:

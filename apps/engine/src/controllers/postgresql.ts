@@ -1,9 +1,14 @@
 import { FastifyBaseLogger } from 'fastify'
 import { Pool } from 'pg'
 import { Logger } from './fastify.ts';
- 
+import * as fs from 'fs';
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD_FILE ? fs.readFileSync(process.env.POSTGRES_PASSWORD_FILE, "utf-8").trim() : process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB || 'transforma',
+  host: process.env.POSTGRES_HOST || 'localhost',
+  port: process.env.POSTGRES_PORT ? Number(process.env.POSTGRES_PORT) : 5432
 });
 
 const checkTables = async () => {

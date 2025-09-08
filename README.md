@@ -86,13 +86,32 @@ function transform(inputObject) {
 
 ## Quick Start
 
-### Prerequisites
+### Docker Compose
+The easiest way to run Transforma is using Docker Compose, which sets up all services including the database.
+
+#### Setup
+
+1. **Create secrets directory and files**
+   ```bash
+   mkdir secrets
+   echo "your_database_password_here" > secrets/db_password.txt
+   echo "your_openai_api_key_here" > secrets/open_api_key.txt
+   ```
+
+2. **Build and start all services**
+   ```bash
+   docker-compose up --build
+   ```
+
+### Development
+
+#### Prerequisites
 
 - Node.js 22+
 - PostgreSQL database
 - OpenAI API key
 
-### Installation
+#### Installation
 
 1. **Clone the repository**
    ```bash
@@ -109,8 +128,12 @@ function transform(inputObject) {
    Create a `.env` file in `apps/engine/`:
    ```env
    PORT=3000
-   ADDRESS=localhost
-   DATABASE_URL=postgresql://username:password@localhost:5432/transforma
+   ADDRESS=localhost (defaults to localhost)
+   POSTGRES_DB='transforma' (defaults to transforma)
+   POSTGRES_USER=your_postgres_user
+   POSTGRES_PASSWORD=your_postgres_password
+   POSTGRES_HOST='localhost' (defaults to localhost)
+   POSTGRES_PORT=5432 (defaults to 5432)
    OPENAI_API_KEY=your_openai_api_key_here
    OPENAI_MODEL=your_desired_model (defaults to 4.1)
    EXECUTION_CACHE_SIZE=100 (defaults to 100)

@@ -22,7 +22,8 @@ WORKDIR /app
 
 COPY --from=builder /app/apps/engine/dist/main.js .
 COPY --from=builder /app/apps/engine/package.json .
-COPY --from=builder /app/node_modules/ .
+COPY --from=builder /app/apps/engine/src/prompt.md ./src/prompt.md
+COPY --from=builder /app/node_modules/ ./node_modules
 
 ENV NODE_ENV=production
 
